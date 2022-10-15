@@ -10,9 +10,9 @@ export type Match<T> = {
     positions: Position[]
 }
 
-export type BoardEvent<T> = ?;
+export type BoardEvent<T> = {};
 
-export type BoardListener<T> = ?;
+export type BoardListener<T> = {};
 
 export class Board<T> {
 
@@ -26,6 +26,7 @@ export class Board<T> {
         this.generator = generator;
         this.width = width;
         this.height = height;
+        this.pieces =  [];
 
         //Fill the board
         var boardSize = width * height;
@@ -35,19 +36,22 @@ export class Board<T> {
     }
 
     IndexToPosition(i : number) : Position {
-        const pos : Position;
+        let pos : Position;
         pos.col = i % this.width;
         pos.row = i / this.width;
         return pos;
     }
     PositionToIndex(position : Position) : number {
-        return position.col + position.row * this.width;
+        return position.col + (position.row * this.width);
     }
       
     addListener(listener: BoardListener<T>) {
     }
 
     piece(p: Position): T | undefined {
+        if(p.col < 0 || p.col >= this.width || p.row < 0 || p.row >= this.height)
+            return undefined;
+
         return this.pieces[this.PositionToIndex(p)];
     }
 
@@ -68,7 +72,7 @@ export class Board<T> {
             if(i == 0)
                 continue;
             
-            const pos : Position;
+            let pos : Position;
             pos.col = horizontalMatch ? second.col : second.col + i;
             pos.row = horizontalMatch ? second.row + i : second.row;
 
