@@ -199,7 +199,8 @@ export class Board<T> {
                             match: match
                         };                                                
 
-                        this.listener(event);
+                        if(this.listener != undefined)
+                            this.listener(event);
 
                         match = {
                             matched: this.piece(first),
@@ -252,7 +253,8 @@ export class Board<T> {
                             match: match
                         };
                 
-                        this.listener(event);
+                        if(this.listener != undefined)
+                            this.listener(event);
 
                         match = {
                             matched: this.piece(first),
