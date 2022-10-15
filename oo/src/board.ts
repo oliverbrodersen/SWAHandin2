@@ -43,9 +43,10 @@ export class Board<T> {
     }
 
     IndexToPosition(i : number) : Position {
-        let pos : Position;
-        pos.col = i % this.width;
-        pos.row = i / this.width;
+        let pos : Position = {
+            col: i % this.width,
+            row: Math.floor(i / this.width)
+        };
         return pos;
     }
     PositionToIndex(position : Position) : number {
@@ -141,17 +142,126 @@ export class Board<T> {
             return;
         }
         
+        if (first.col == second.col && first.row == second.row)
+            return false;
+
+        var p1 = this.piece(first);
+        var p2 = this.piece(second);
+
+        if (p1 == undefined || p2 == undefined)
+            return false;
+
+        var deltaX = first.col - second.col;
+        var deltaY = first.row - second.row;
+        if (deltaX != 0 && deltaY != 0)
+            return false;
+        
+        this.swap(first, second);
+        
         let match : Match<T> = {
             matched: this.piece(first),
             positions: []
         };
 
-        let event : BoardEvent<T> = { 
-            kind: "Match",
-            match: match
-        };
-        this.listener(event);
+        // Foreach row
+        for (let Y = 0; Y < this.height; Y++) {
+            var last = this.pieces[this.CoordsToIndex(0,Y)];
+            var count = 0;
+            for (let X = 1; X < this.width; X++) {
+                const index = this.CoordsToIndex(X,Y);
+                const element = this.pieces[index];
+                if (element === last) {
+                    count++;
+                } else {
+                    count = 0;
+                }
 
-        this.swap(first, second);
+                if (count == 1)
+                {
+                    match.positions.push(this.IndexToPosition(index - 1));
+                    match.positions.push(this.IndexToPosition(index));
+                }
+                else if (count == 0 || X == this.width-1)
+                {
+                    //Fire event
+                    if (match.positions.length >= 3)
+                    {
+                        match.matched = last;
+                        let event : BoardEvent<T> = { 
+                            kind: "Match",
+                            match: match
+                        };
+                
+                        this.listener(event);
+
+                        match = {
+                            matched: this.piece(first),
+                            positions: []
+                        };
+                    }
+                    match.positions = [];
+                }
+                else if (count >= 2)
+                {
+                    match.positions.push(this.IndexToPosition(index));
+                } 
+
+                last = element;
+            }
+
+            // 
+
+        }
+
+        match.positions = [];
+
+        // Foreach col
+        for (let X = 0; X < this.width; X++) {
+            var last = this.pieces[this.CoordsToIndex(X,0)];
+            var count = 0;
+            for (let Y = 1; Y < this.height; Y++) {
+                const index = this.CoordsToIndex(X,Y);
+                const element = this.pieces[index];
+                if (element === last) {
+                    count++;
+                } else {
+                    count = 0;
+                }
+
+                if (count == 1)
+                {
+                    match.positions.push(this.IndexToPosition(index - this.width));
+                    match.positions.push(this.IndexToPosition(index));
+                }
+                else if (count == 0 || X == this.width-1)
+                {
+                    //Fire event
+                    if (match.positions.length >= 3)
+                    {
+                        match.matched = last;
+                        let event : BoardEvent<T> = { 
+                            kind: "Match",
+                            match: match
+                        };
+                
+                        this.listener(event);
+
+                        match = {
+                            matched: this.piece(first),
+                            positions: []
+                        };
+                    }
+                    match.positions = [];
+                }
+                else if (count >= 2)
+                {
+                    match.positions.push(this.IndexToPosition(index));
+                } 
+
+                last = element;
+            }
+        }
+
+
     }
 }
