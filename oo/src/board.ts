@@ -158,15 +158,18 @@ export class Board<T> {
         
         this.swap(first, second);
         
-        let match : Match<T> = {
-            matched: this.piece(first),
-            positions: []
-        };
+        let events : BoardEvent<T>[] = [];
 
         // Foreach row
         for (let Y = 0; Y < this.height; Y++) {
             var last = this.pieces[this.CoordsToIndex(0,Y)];
             var count = 0;
+
+            let match : Match<T> = {
+                matched: this.piece(first),
+                positions: []
+            };
+
             for (let X = 1; X < this.width; X++) {
                 const index = this.CoordsToIndex(X,Y);
                 const element = this.pieces[index];
@@ -181,7 +184,11 @@ export class Board<T> {
                     match.positions.push(this.IndexToPosition(index - 1));
                     match.positions.push(this.IndexToPosition(index));
                 }
-                else if (count == 0 || X == this.width-1)
+                else if(count > 1) {
+                    match.positions.push(this.IndexToPosition(index));
+                }
+
+                if (count == 0 || X == this.width-1)
                 {
                     //Fire event
                     if (match.positions.length >= 3)
@@ -190,9 +197,10 @@ export class Board<T> {
                         let event : BoardEvent<T> = { 
                             kind: "Match",
                             match: match
-                        };
-                
+                        };                                                
+
                         this.listener(event);
+                        events.push(event);
 
                         match = {
                             matched: this.piece(first),
@@ -201,24 +209,21 @@ export class Board<T> {
                     }
                     match.positions = [];
                 }
-                else if (count >= 2)
-                {
-                    match.positions.push(this.IndexToPosition(index));
-                } 
 
                 last = element;
             }
-
-            // 
-
         }
-
-        match.positions = [];
 
         // Foreach col
         for (let X = 0; X < this.width; X++) {
             var last = this.pieces[this.CoordsToIndex(X,0)];
             var count = 0;
+
+            let match : Match<T> = {
+                matched: this.piece(first),
+                positions: []
+            };
+
             for (let Y = 1; Y < this.height; Y++) {
                 const index = this.CoordsToIndex(X,Y);
                 const element = this.pieces[index];
@@ -233,7 +238,11 @@ export class Board<T> {
                     match.positions.push(this.IndexToPosition(index - this.width));
                     match.positions.push(this.IndexToPosition(index));
                 }
-                else if (count == 0 || X == this.width-1)
+                else if(count > 1) {
+                    match.positions.push(this.IndexToPosition(index));
+                }
+                
+                if (count == 0 || Y == this.height-1)
                 {
                     //Fire event
                     if (match.positions.length >= 3)
@@ -245,6 +254,7 @@ export class Board<T> {
                         };
                 
                         this.listener(event);
+                        events.push(event);
 
                         match = {
                             matched: this.piece(first),
@@ -253,15 +263,11 @@ export class Board<T> {
                     }
                     match.positions = [];
                 }
-                else if (count >= 2)
-                {
-                    match.positions.push(this.IndexToPosition(index));
-                } 
 
                 last = element;
             }
         }
 
-
+        console.log( "[" + first.col + "," + first.row + " -> " + second.col + "," + second.row + "] " + events.length)
     }
 }
