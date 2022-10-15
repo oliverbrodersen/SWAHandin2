@@ -200,7 +200,6 @@ export class Board<T> {
                         };                                                
 
                         this.listener(event);
-                        events.push(event);
 
                         match = {
                             matched: this.piece(first),
@@ -215,7 +214,7 @@ export class Board<T> {
         }
 
         // Foreach col
-        for (let X = 0; X < this.width; X++) {
+        for (let X = this.width - 1; X >= 0; X--) {
             var last = this.pieces[this.CoordsToIndex(X,0)];
             var count = 0;
 
@@ -254,7 +253,6 @@ export class Board<T> {
                         };
                 
                         this.listener(event);
-                        events.push(event);
 
                         match = {
                             matched: this.piece(first),
@@ -268,6 +266,6 @@ export class Board<T> {
             }
         }
 
-        console.log( "[" + first.col + "," + first.row + " -> " + second.col + "," + second.row + "] " + events.length)
+        //console.log( "[" + first.col + "," + first.row + " -> " + second.col + "," + second.row + "] " + events.length)
     }
 }
