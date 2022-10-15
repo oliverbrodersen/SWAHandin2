@@ -10,9 +10,14 @@ export type Match<T> = {
     positions: Position[]
 }
 
-export type BoardEvent<T> = {};
+export type BoardEvent<T> = {
+    kind : string,
+    match : Match<T>
+};
 
-export type BoardListener<T> = {};
+export type BoardListener<T> = {
+    
+};
 
 export class Board<T> {
 
@@ -22,6 +27,8 @@ export class Board<T> {
 
     pieces : T[];
 
+
+    
     constructor(generator: Generator<T>, width : number, height : number) {
         this.generator = generator;
         this.width = width;
@@ -49,6 +56,7 @@ export class Board<T> {
     }
       
     addListener(listener: BoardListener<T>) {
+
     }
 
     piece(p: Position): T | undefined {
@@ -60,7 +68,8 @@ export class Board<T> {
 
     swap(first: Position, second: Position) {
         var p1 = this.pieces[this.PositionToIndex(first)];
-        this.pieces[this.PositionToIndex(first)] = this.pieces[this.PositionToIndex(second)];
+        var p2 = this.pieces[this.PositionToIndex(second)];
+        this.pieces[this.PositionToIndex(first)] = p2;
         this.pieces[this.PositionToIndex(second)] = p1;
     }
 
@@ -127,5 +136,14 @@ export class Board<T> {
     }
     
     move(first: Position, second: Position) {
+        if (!this.canMove(first, second))
+        {
+            return;
+        }
+        
+        this.swap(first, second);
+
+
+
     }
 }
