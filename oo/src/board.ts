@@ -44,6 +44,9 @@ export class Board<T> {
     PositionToIndex(position : Position) : number {
         return position.col + (position.row * this.width);
     }
+    CoordsToIndex(col : number, row : number) : number {
+        return col + (row * this.width);
+    }
       
     addListener(listener: BoardListener<T>) {
     }
@@ -55,43 +58,72 @@ export class Board<T> {
         return this.pieces[this.PositionToIndex(p)];
     }
 
-    getMatchedPieces(first: Position, second: Position): Position[]{
-        let positions: Position[];
-        const horizontalMatch = first.col == second.col + 1 || second.col - 1; 
-        const verticalMatch = first.row == second.row + 1 || second.row - 1; 
-
-        if(!horizontalMatch && !verticalMatch)
-            return positions;
-
-        const piece = this.piece(first);
-
-        // Checks two tiles to each side of the second position 
-        // since any more matching tiles would have already resulted in a match event.
-        for(let i = -2; i++; i < 2){
-            // I is 0 when the second position is checked. We know this piece is not a match so we skip it.
-            if(i == 0)
-                continue;
-            
-            let pos : Position;
-            pos.col = horizontalMatch ? second.col : second.col + i;
-            pos.row = horizontalMatch ? second.row + i : second.row;
-
-            if(this.piece(pos) == piece){
-                positions.push(pos);
-            }    
-            else{
-                positions.splice(0);
-            }
-        }
-
-        // Adds second position to array since it will always be a match as long as the move is legal.
-        // This makes the function reusable getting matched positions for the 'Match' event
-        positions.push(second);
-        return positions;
+    swap(first: Position, second: Position) {
+        var p1 = this.piece[this.PositionToIndex(first)];
+        this.piece[this.PositionToIndex(first)] = this.piece[this.PositionToIndex(second)];
+        this.piece[this.PositionToIndex(second)] = p1;
     }
 
     canMove(first: Position, second: Position): boolean {
-        return this.getMatchedPieces(first, second).length >= 3;
+        
+        if (first.col == second.col && first.row == second.row)
+            return false;
+
+        var p1 = this.piece(first);
+        var p2 = this.piece(second);
+
+        if (p1 == undefined || p2 == undefined)
+            return false;
+
+        var deltaX = first.col - second.col;
+        var deltaY = first.row - second.row;
+        if (deltaX != 0 && deltaY != 0)
+            return false;
+        
+        this.swap(first, second);
+
+        // Foreach row
+        for (let Y = 0; Y < this.height; Y++) {
+            var last = this.piece[this.CoordsToIndex(0,Y)];
+            var count = 0;
+            for (let X = 1; X < this.width; X++) {
+                const element = this.piece[this.CoordsToIndex(X,Y)];
+                if (element == last) {
+                    count++;
+                } else {
+                    count = 0;
+                }
+                last = element;
+            }
+            if (count >= 3)
+            {
+                this.swap(first, second);
+                return true;
+            }
+        }
+
+        // Foreach col
+        for (let X = 0; X < this.width; X++) {
+            var last = this.piece[this.CoordsToIndex(X,0)];
+            var count = 0;
+            for (let Y = 1; Y < this.height; Y++) {
+                const element = this.piece[this.CoordsToIndex(X,Y)];
+                if (element == last) {
+                    count++;
+                } else {
+                    count = 0;
+                }
+                last = element;
+            }
+            if (count >= 3)
+            {
+                this.swap(first, second);
+                return true;
+            }
+        }
+
+        this.swap(first, second);
+        return false;
     }
     
     move(first: Position, second: Position) {
