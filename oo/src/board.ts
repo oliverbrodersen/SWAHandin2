@@ -59,9 +59,9 @@ export class Board<T> {
     }
 
     swap(first: Position, second: Position) {
-        var p1 = this.piece[this.PositionToIndex(first)];
-        this.piece[this.PositionToIndex(first)] = this.piece[this.PositionToIndex(second)];
-        this.piece[this.PositionToIndex(second)] = p1;
+        var p1 = this.pieces[this.PositionToIndex(first)];
+        this.pieces[this.PositionToIndex(first)] = this.pieces[this.PositionToIndex(second)];
+        this.pieces[this.PositionToIndex(second)] = p1;
     }
 
     canMove(first: Position, second: Position): boolean {
@@ -84,41 +84,41 @@ export class Board<T> {
 
         // Foreach row
         for (let Y = 0; Y < this.height; Y++) {
-            var last = this.piece[this.CoordsToIndex(0,Y)];
+            var last = this.pieces[this.CoordsToIndex(0,Y)];
             var count = 0;
             for (let X = 1; X < this.width; X++) {
-                const element = this.piece[this.CoordsToIndex(X,Y)];
-                if (element == last) {
+                const element = this.pieces[this.CoordsToIndex(X,Y)];
+                if (element === last) {
                     count++;
+                    if (count >= 2)
+                    {
+                        this.swap(first, second);
+                        return true;
+                    }
                 } else {
                     count = 0;
                 }
                 last = element;
-            }
-            if (count >= 3)
-            {
-                this.swap(first, second);
-                return true;
             }
         }
 
         // Foreach col
         for (let X = 0; X < this.width; X++) {
-            var last = this.piece[this.CoordsToIndex(X,0)];
+            var last = this.pieces[this.CoordsToIndex(X,0)];
             var count = 0;
             for (let Y = 1; Y < this.height; Y++) {
-                const element = this.piece[this.CoordsToIndex(X,Y)];
-                if (element == last) {
+                const element = this.pieces[this.CoordsToIndex(X,Y)];
+                if (element === last) {
                     count++;
+                    if (count >= 2)
+                    {
+                        this.swap(first, second);
+                        return true;
+                    }
                 } else {
                     count = 0;
                 }
                 last = element;
-            }
-            if (count >= 3)
-            {
-                this.swap(first, second);
-                return true;
             }
         }
 
