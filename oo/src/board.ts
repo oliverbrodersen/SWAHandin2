@@ -141,8 +141,15 @@ export class Board<T> {
             return;
         }
         
-        var event : BoardEvent<T>;
-        event.kind = 'match';
+        let match : Match<T> = {
+            matched: this.piece(first),
+            positions: []
+        };
+
+        let event : BoardEvent<T> = { 
+            kind: "Match",
+            match: match
+        };
         this.listener(event);
 
         this.swap(first, second);
