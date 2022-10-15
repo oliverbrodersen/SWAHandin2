@@ -15,8 +15,8 @@ export type BoardEvent<T> = {
     match : Match<T>
 };
 
-export type BoardListener<T> = {
-    
+export type BoardListener<T> = (event : BoardEvent<T>) => {
+
 };
 
 export class Board<T> {
@@ -27,7 +27,7 @@ export class Board<T> {
 
     pieces : T[];
 
-
+    listener : BoardListener<T>;
     
     constructor(generator: Generator<T>, width : number, height : number) {
         this.generator = generator;
@@ -56,7 +56,7 @@ export class Board<T> {
     }
       
     addListener(listener: BoardListener<T>) {
-
+        this.listener = listener;
     }
 
     piece(p: Position): T | undefined {
@@ -141,9 +141,10 @@ export class Board<T> {
             return;
         }
         
+        var event : BoardEvent<T>;
+        event.kind = 'match';
+        this.listener(event);
+
         this.swap(first, second);
-
-
-
     }
 }
