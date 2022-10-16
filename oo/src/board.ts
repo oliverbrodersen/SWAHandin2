@@ -135,6 +135,20 @@ export class Board<T> {
         this.swap(first, second);
         return false;
     }
+
+    gravity(){
+        for (let col = 0; col < this.width; col++) {
+            for (let row = this.height - 1; row >= 0; row--) {
+                let lookUp = 0;
+                while(this.pieces[this.CoordsToIndex(col,row)] == undefined && row - lookUp > 0)
+                {
+                    lookUp++;
+                    this.pieces[this.CoordsToIndex(col,row)] = this.pieces[this.CoordsToIndex(col,row - lookUp)]
+                    this.pieces[this.CoordsToIndex(col,row - lookUp)] = undefined;
+                }
+            }
+        }
+    }
     
     evolveBoard()
     {
@@ -182,9 +196,9 @@ export class Board<T> {
                         if(this.listener != undefined)
                         {
                             this.listener(event);
-                            events.push(event);
                         }
 
+                        events.push(event);
                         match = {
                             matched: last,
                             positions: []
@@ -239,9 +253,9 @@ export class Board<T> {
                         if(this.listener != undefined)
                         {
                             this.listener(event);
-                            events.push(event);
                         }
 
+                        events.push(event);
                         match = {
                             matched: last,
                             positions: []
@@ -254,8 +268,12 @@ export class Board<T> {
             }
         }
 
-        if (events.length == 0 || this.listener == undefined)
+        if (events.length == 0){
+            console.log("no events");
             return;
+        }
+
+        this.printBoard();
 
         events.forEach(element => {
             element.match.positions.forEach(position => {
@@ -266,19 +284,51 @@ export class Board<T> {
         let event : BoardEvent<T> = { 
             kind: "Refill"
         };
-        this.listener(event);
 
+        if(this.listener != undefined)
+            this.listener(event);
 
+        this.printBoard();
+        this.gravity();
+        this.printBoard();
         
-        this.generator.next();
+        while(this.pieces.includes(undefined)){
+            this.gravity();
+            for (let index = 0; index < this.width; index++) {
+                const element = this.pieces[index];
+                if(element == undefined){
+                    this.pieces[index] = this.generator.next();
+                }
+            }
+        }
 
+
+        this.evolveBoard();
+    }
+
+    printBoard(){
+        let b = "";
+        for (let index = 0; index < this.pieces.length; index++) {
+            const element = this.pieces[index];
+            
+            if(element == undefined){
+                b += " ? ";
+            }
+            else{
+                b += " " + element + " ";
+            }
+        
+            if((index + 1) % this.width == 0 && index != 0){
+                b += "\n"
+            }
+        }
+        console.log(b);
     }
 
     move(first: Position, second: Position) {
+        console.log("[ " + first.col + "," + first.row + "][" + second.col + "," + second.row + "]")
         if (!this.canMove(first, second))
-        {
             return;
-        }
         
         if (first.col == second.col && first.row == second.row)
             return false;
@@ -297,6 +347,5 @@ export class Board<T> {
         this.swap(first, second);
         
         this.evolveBoard();
-        //console.log( "[" + first.col + "," + first.row + " -> " + second.col + "," + second.row + "] " + events.length)
     }
 }
