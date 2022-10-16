@@ -179,7 +179,6 @@ function evolveBoard<T>(moveResult : MoveResult<T>): MoveResult<T> {
                     };
 
                     events.push(event);
-                    moveResult.effects.push(event);
                     match = {
                         matched: last,
                         positions: []
@@ -229,7 +228,6 @@ function evolveBoard<T>(moveResult : MoveResult<T>): MoveResult<T> {
                     };
 
                     events.push(event);
-                    moveResult.effects.push(event);
                     match = {
                         matched: last,
                         positions: []
@@ -242,7 +240,7 @@ function evolveBoard<T>(moveResult : MoveResult<T>): MoveResult<T> {
         }
     }
 
-    moveResult.effects.concat(events);
+    moveResult.effects = moveResult.effects.concat(events);
 
     if (events.length == 0) {
         return moveResult;
@@ -271,6 +269,8 @@ function evolveBoard<T>(moveResult : MoveResult<T>): MoveResult<T> {
     moveResult.effects.push(event);
 
     moveResult = evolveBoard(moveResult);
+
+    return moveResult;
 }
 
 function gravity<T>(board: Board<T>) {
