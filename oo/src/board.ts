@@ -12,7 +12,7 @@ export type Match<T> = {
 
 export type BoardEvent<T> = {
     kind : string,
-    match : Match<T>
+    match? : Match<T>
 };
 
 export type BoardListener<T> = (event : BoardEvent<T>) => {
@@ -136,28 +136,8 @@ export class Board<T> {
         return false;
     }
     
-    move(first: Position, second: Position) {
-        if (!this.canMove(first, second))
-        {
-            return;
-        }
-        
-        if (first.col == second.col && first.row == second.row)
-            return false;
-
-        var p1 = this.piece(first);
-        var p2 = this.piece(second);
-
-        if (p1 == undefined || p2 == undefined)
-            return false;
-
-        var deltaX = first.col - second.col;
-        var deltaY = first.row - second.row;
-        if (deltaX != 0 && deltaY != 0)
-            return false;
-        
-        this.swap(first, second);
-        
+    evolveBoard()
+    {
         let events : BoardEvent<T>[] = [];
 
         // Foreach row
@@ -166,7 +146,7 @@ export class Board<T> {
             var count = 0;
 
             let match : Match<T> = {
-                matched: this.piece(first),
+                matched: last,
                 positions: []
             };
 
@@ -200,10 +180,13 @@ export class Board<T> {
                         };                                                
 
                         if(this.listener != undefined)
+                        {
                             this.listener(event);
+                            events.push(event);
+                        }
 
                         match = {
-                            matched: this.piece(first),
+                            matched: last,
                             positions: []
                         };
                     }
@@ -220,7 +203,7 @@ export class Board<T> {
             var count = 0;
 
             let match : Match<T> = {
-                matched: this.piece(first),
+                matched: last,
                 positions: []
             };
 
@@ -254,10 +237,13 @@ export class Board<T> {
                         };
                 
                         if(this.listener != undefined)
+                        {
                             this.listener(event);
+                            events.push(event);
+                        }
 
                         match = {
-                            matched: this.piece(first),
+                            matched: last,
                             positions: []
                         };
                     }
@@ -268,6 +254,49 @@ export class Board<T> {
             }
         }
 
+        if (events.length == 0 || this.listener == undefined)
+            return;
+
+        events.forEach(element => {
+            element.match.positions.forEach(position => {
+                this.pieces[this.PositionToIndex(position)] = undefined;
+            });
+        });
+
+        let event : BoardEvent<T> = { 
+            kind: "Refill"
+        };
+        this.listener(event);
+
+
+        
+        this.generator.next();
+
+    }
+
+    move(first: Position, second: Position) {
+        if (!this.canMove(first, second))
+        {
+            return;
+        }
+        
+        if (first.col == second.col && first.row == second.row)
+            return false;
+
+        var p1 = this.piece(first);
+        var p2 = this.piece(second);
+
+        if (p1 == undefined || p2 == undefined)
+            return false;
+
+        var deltaX = first.col - second.col;
+        var deltaY = first.row - second.row;
+        if (deltaX != 0 && deltaY != 0)
+            return false;
+        
+        this.swap(first, second);
+        
+        this.evolveBoard();
         //console.log( "[" + first.col + "," + first.row + " -> " + second.col + "," + second.row + "] " + events.length)
     }
 }
